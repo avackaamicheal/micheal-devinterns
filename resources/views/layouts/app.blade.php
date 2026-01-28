@@ -32,10 +32,9 @@
     <link rel="stylesheet" href="{{ asset('plugins/summernote/summernote-bs4.min.css') }}">
 
     <style type="text/css">
-        .required{
+        .required {
             color: red;
         }
-
     </style>
 </head>
 
@@ -50,8 +49,15 @@
 
         @include('layouts.header')
 
-        @yield('content')
+        <div>
+            <div id="ajax-alert-container"
+                style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;"></div>
 
+            @include('partials.alert') {{-- This handles standard Session flashes --}}
+
+        </div>
+
+        @yield('content')
         <!-- /.content-wrapper -->
         @include('layouts.footer')
 
@@ -95,6 +101,39 @@
     <script src="{{ asset('dist/js/adminlte.js') }}"></script>
     <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
     <script src="{{ asset('dist/js/pages/dashboard.js') }}"></script>
+    <script src="{{ asset('dist/js/adminlte.min.js') }}"></script>
+
+    <script>
+        window.showFlash = function(type, message) {
+            const container = document.getElementById('ajax-alert-container');
+            if (!container) {
+                console.error("Alert container missing! Add <div id='ajax-alert-container'></div> to your layout.");
+                return;
+            }
+
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const icon = type === 'success' ? 'fa-check' : 'fa-ban';
+
+            const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show shadow-sm">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas ${icon}"></i> ${type === 'success' ? 'Success' : 'Error'}</h5>
+                ${message}
+            </div>
+        `;
+
+            container.innerHTML = alertHtml;
+
+            // Auto-hide the alert after 4 seconds
+            setTimeout(() => {
+                $(".alert").fadeTo(500, 0).slideUp(500, function() {
+                    $(this).remove();
+                });
+            }, 4000);
+        };
+    </script>
+
+    @stack('scripts')
 </body>
 
 </html>

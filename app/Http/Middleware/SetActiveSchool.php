@@ -34,7 +34,7 @@ class SetActiveSchool
             // hasn't manually injected a school_id they don't own.
             if (!$user->hasRole('SuperAdmin') && session('active_school') !== $user->school_id) {
                 // Force the session back to their actual school for security
-                session(['active_school_id' => $user->school_id]);
+                session(['active_school' => $user->school_id]);
             }
         }
         return $next($request);

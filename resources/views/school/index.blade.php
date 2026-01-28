@@ -57,16 +57,25 @@
                                                 <td>
                                                     <a href=""><button class="btn btn-primary btn-sm btn-rounded"><span class="fas fa-eye"></span></button></a>
                                                     <a href="{{ route('school.edit', $school->id) }}"><button class="btn btn-primary btn-sm btn-rounded"><span class="fas fa-pen"></span></button></a>
-                                                    <button form="delete-form" class="btn btn-danger btn-sm btn-rounded"><span class="fas fa-times"></span></button>
+                                                    <form action="{{ route('school.destroy', $school->id) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+
+                                                        <button type="submit"
+                                                                class="btn btn-danger btn-sm btn-rounded"
+                                                                onclick="return confirm('Are you sure you want to delete this school?');">
+                                                            <span class="fas fa-trash"></span>
+                                                        </button>
+                                                    </form>
                                                 </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
 
-                                    <form method="POST" action="{{ route('school.destroy', $school->id) }}" id="delete-form" class="hidden">
+                                    {{-- <form method="POST" action="{{ route('school.destroy', $school->id) }}" id="delete-form" class="hidden">
                                     @csrf
                                     @method('DELETE')
-                                    </form>
+                                    </form> --}}
                                 </table>
                             </div>
                             <!-- /.card-body -->

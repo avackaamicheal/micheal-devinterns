@@ -6,18 +6,24 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Bursar\BursarController;
 use App\Http\Controllers\Parent\ParentController;
 use App\Http\Controllers\School\SchoolController;
+use App\Http\Controllers\SchoolContextController;
+use App\Http\Controllers\Section\SectionController;
 use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\ClassLevel\ClassLevelController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\SchoolAdmin\SchoolAdminController;
+use App\Http\Controllers\Subject\SubjectController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
 Auth::routes();
 
-Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::get('/',function () {
+    return view('auth.login');
+});
 
 Route::middleware('auth')->group(function () {
 
@@ -49,12 +55,26 @@ Route::middleware('auth')->group(function () {
 
 
         // SuperAdmin routes
-    Route::middleware(['auth', 'role:SuperAdmin'])
+    Route::middleware(['auth', 'role:SuperAdmin', 'tenant'])
             ->prefix('superadmin')
             ->group(function () {
 
         Route::get('/dashboard', [SuperAdminController::class, 'index'])->name('superadmin.dashboard');
         Route::resource('school', SchoolController::class);
+        Route::post('/school-context',SchoolContextController::class)->name('school.context');
+
+
+    });
+
+        // SchoolAdmin routes
+    Route::middleware(['auth', 'role:SchoolAdmin', 'tenant'])
+            ->prefix('schooladmin')
+            ->group(function () {
+
+        Route::get('/dashboard', [SchoolAdminController::class, 'index'])->name('schooladmin.dashboard');
+        Route::resource('classLevel', ClassLevelController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('section', SectionController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('subject', SubjectController::class)->only(['index', 'store', 'update', 'destroy']);
 
 
     });

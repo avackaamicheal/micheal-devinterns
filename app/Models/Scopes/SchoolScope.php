@@ -21,8 +21,8 @@ class SchoolScope implements Scope
             // A. If a Teacher is logged in, middleware set their ID -> Filter applied.
             // B. If SuperAdmin selected a school, middleware set that ID -> Filter applied.
             // C. If SuperAdmin is in "Global View" (session is null) -> No Filter (Show All).
-        if (session($activeSchool)) {
-            $builder->where('school_id', session($activeSchool));
+        if ($activeSchool) {
+            $builder->where('school_id', $activeSchool);
         }
     }
 }
