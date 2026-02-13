@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="content-wrapper">
-        
+
         <div class="content-header">
             <div class="container-fluid">
                 <div class="row mb-2">
@@ -67,7 +67,7 @@
                             <div class="icon">
                                 <i class="fas fa-book"></i>
                             </div>
-                            {{-- <a href="{{ route('subjects.index') }}" class="small-box-footer">Curriculum <i class="fas fa-arrow-circle-right"></i></a> --}}
+                            <a href="{{ route('subject.index') }}" class="small-box-footer">Curriculum <i class="fas fa-arrow-circle-right"></i></a>
                         </div>
                     </div>
                 </div>

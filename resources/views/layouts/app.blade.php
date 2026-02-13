@@ -55,9 +55,9 @@
 
             @include('partials.alert') {{-- This handles standard Session flashes --}}
 
+            @yield('content')
         </div>
 
-        @yield('content')
         <!-- /.content-wrapper -->
         @include('layouts.footer')
 
@@ -67,7 +67,7 @@
     </div>
     <!-- ./wrapper -->
 
-    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    {{-- <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script> --}}
 
     <!-- jQuery -->
     <script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>
@@ -101,7 +101,7 @@
     <script src="{{ asset('dist/js/adminlte.js') }}"></script>
     <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
     <script src="{{ asset('dist/js/pages/dashboard.js') }}"></script>
-    <script src="{{ asset('dist/js/adminlte.min.js') }}"></script>
+    {{-- <script src="{{ asset('dist/js/adminlte.min.js') }}"></script> --}}
 
     <script>
         window.showFlash = function(type, message) {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\ClassLevel;
 use App\Traits\Multitenantable;
 use Illuminate\Database\Eloquent\Model;
 

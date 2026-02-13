@@ -48,13 +48,15 @@
                                             '{{ $subject->description }}')">
                                                 <i class="fas fa-pen"></i> Edit
                                             </button>
-                                            <form action="{{ route('subject.destroy', $subject->id) }}" method="POST"
+
+                                            <button class="btn btn-danger btn-sm"
+                                                onclick="handleDelete({{ $subject->id }})">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+
+                                            <form id="delete-form-{{ $subject->id }}" action="{{ route('subject.destroy', $subject->id) }}" method="POST"
                                                 style="display:inline;">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm"
-                                                    onclick="return confirm('Delete subject?')">
-                                                    <i class="fas fa-trash"></i> Delete
-                                                </button>
                                             </form>
                                         </td>
                                     </tr>
@@ -163,5 +165,44 @@
                 alert('System Error');
             }
         };
+
+
+         window.handleDelete = async function(id) {
+            if (!confirm('Are you sure you want to delete this subject?')) {
+                return;
+            }
+
+            const form = document.getElementById(`delete-form-${id}`);
+            const url = form.action;
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST', // Form specifies DELETE via _method, but we send as POST
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 1. Trigger the Global Flash Message
+                    window.showFlash('success', data.message || 'Subject deleted successfully.');
+
+                    // 2. Remove the row from the table immediately for a "snappy" feel
+                    // Or reload after a delay if you prefer
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    window.showFlash('error', 'Could not delete: ' + (data.message || 'Server error'));
+                }
+            } catch (error) {
+                window.showFlash('error', 'System error occurred during deletion.');
+            }
+        }
     </script>
 @endpush

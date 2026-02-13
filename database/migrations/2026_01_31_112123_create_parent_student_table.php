@@ -1,6 +1,7 @@
 <?php
 
-use App\Models\User;
+use App\Models\ParentProfile;
+use App\Models\StudentProfile;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,12 +13,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('parent_profiles', function (Blueprint $table) {
+        Schema::create('parent_student', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
-            $table->string('occupation')->nullable();
-            $table->string('address')->nullable();
-            $table->string('alt_phone')->nullable(); // Secondary emergency contact
+            $table->foreignId('parent_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('student_id')->constrained('users')->cascadeOnDelete();
+            $table->string('relationship')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('parent_profiles');
+        Schema::dropIfExists('parent_student');
     }
 };

@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateClassLevelRequest;
 
 class ClassLevelController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      */
@@ -38,6 +39,7 @@ class ClassLevelController extends Controller
     public function store(StoreClassLevelRequest $request)
     {
         $validatedData = $request->validated();
+
 
         ClassLevel::create($validatedData);
 

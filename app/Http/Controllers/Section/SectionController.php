@@ -88,7 +88,15 @@ class SectionController extends Controller
      */
     public function destroy(Section $section)
     {
-       $section->delete();
+        $section->delete();
+
+        // Check if the request wants JSON (AJAX)
+        if (request()->ajax() || request()->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Section deleted successfully!'
+            ]);
+        }
 
         return back()->with('success', 'Section deleted.');
     }
