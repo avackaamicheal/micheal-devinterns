@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Academic\AcademicSettingsController;
+use App\Http\Controllers\Academic\AttendanceController;
 use App\Http\Controllers\Academic\ClassroomAssignmentController;
 use App\Http\Controllers\Academic\StudentAdmissionController;
 use App\Http\Controllers\Academic\TimetableController;
@@ -94,4 +95,8 @@ Route::middleware(['auth', 'role:SchoolAdmin', 'tenant'])
         Route::get('/timetable', [TimetableController::class, 'index'])->name('timetable.index');
         Route::post('/timetable', [TimetableController::class, 'store'])->name('timetable.store');
         Route::delete('/timetable/{timetable}', [TimetableController::class, 'destroy'])->name('timetable.destroy');
+        // Attendance Routes
+        Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+        Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+        Route::get('/attendance/export', [AttendanceController::class, 'export'])->name('attendance.export');
     });

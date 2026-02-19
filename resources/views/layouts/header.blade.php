@@ -205,7 +205,7 @@
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                     data-accordion="false">
                     <!-- Add icons to the links using the .nav-icon class
-                               with font-awesome or any other icon font library -->
+                                   with font-awesome or any other icon font library -->
                     <li class="nav-item menu-open">
                         @if (auth()->user()?->hasRole('SuperAdmin'))
                             <a href="{{ route('superadmin.dashboard') }}" class="nav-link active">
@@ -261,6 +261,12 @@
                             <a href="{{ route('timetable.index') }}" class="nav-link">
                                 <i class="nav-icon fas fa-calendar-week"></i>
                                 <p>Timetable</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('attendance.index') }}" class="nav-link">
+                                <i class="nav-icon fas fa-user-check"></i>
+                                <p>Attendance</p>
                             </a>
                         </li>
                         <li class="nav-item">
