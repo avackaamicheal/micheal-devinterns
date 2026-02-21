@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\ClassLevel;
 
 use App\Models\ClassLevel;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreClassLevelRequest;
 use App\Http\Requests\UpdateClassLevelRequest;

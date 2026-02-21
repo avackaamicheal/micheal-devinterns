@@ -89,4 +89,9 @@ class User extends Authenticatable
             ->withPivot('relationship')
             ->withTimestamps();
     }
+
+    public function school()
+{
+    return $this->belongsTo(School::class);
+}
 }

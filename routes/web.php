@@ -29,12 +29,6 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
-
-    // SchoolAdmin
-    Route::get('/schooladmin/dashboard', [SchoolAdminController::class, 'index'])
-        ->middleware('role:SchoolAdmin')
-        ->name('schooladmin.dashboard');
-
     // Teacher
     Route::get('/teacher/dashboard', [TeacherController::class, 'index'])
         ->middleware('role:Teacher')
@@ -69,34 +63,35 @@ Route::middleware(['auth', 'role:SuperAdmin', 'tenant'])
 
     });
 
-// SchoolAdmin routes
-Route::middleware(['auth', 'role:SchoolAdmin', 'tenant'])
-    ->prefix('schooladmin')
-    ->group(function () {
+Route::middleware(['auth', 'active', 'role:SchoolAdmin'])
+    // SchoolAdmin routes
+        ->prefix('{school}')
+        ->group(function () {
 
-        Route::get('/dashboard', [SchoolAdminController::class, 'index'])->name('schooladmin.dashboard');
-        Route::resource('classLevel', ClassLevelController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::resource('section', SectionController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::resource('subject', SubjectController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::get('students/export', [StudentAdmissionController::class, 'export'])->name('students.export');
-        Route::post('students/import', [StudentAdmissionController::class, 'import'])->name('students.import');
-        Route::get('students/template', [StudentAdmissionController::class, 'downloadTemplate'])->name('students.template');
-        Route::resource('student', StudentAdmissionController::class)->only('index', 'create', 'store', 'destroy');
-        Route::resource('classassignment', ClassroomAssignmentController::class)->only('index', 'create', 'destroy');
-        // Academic Settings
-        Route::get('/academic-settings', [AcademicSettingsController::class, 'index'])->name('academic-settings.index');
+            Route::get('/dashboard', [SchoolAdminController::class, 'index'])->name('schooladmin.dashboard');
+            Route::resource('classLevel', ClassLevelController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::resource('section', SectionController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::resource('subject', SubjectController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::get('students/export', [StudentAdmissionController::class, 'export'])->name('students.export');
+            Route::post('students/import', [StudentAdmissionController::class, 'import'])->name('students.import');
+            Route::get('students/template', [StudentAdmissionController::class, 'downloadTemplate'])->name('students.template');
+            Route::resource('student', StudentAdmissionController::class)->only('index', 'create', 'store', 'destroy');
+            Route::resource('classassignment', ClassroomAssignmentController::class)->only('index', 'create', 'destroy');
+            // Academic Settings
+            Route::get('/academic-settings', [AcademicSettingsController::class, 'index'])->name('academic-settings.index');
 
-        Route::post('/academic-sessions', [AcademicSettingsController::class, 'storeSession'])->name('academic-sessions.store');
-        Route::post('/academic-sessions/{academicSession}/activate', [AcademicSettingsController::class, 'activateSession'])->name('academic-sessions.activate');
+            Route::post('/academic-sessions', [AcademicSettingsController::class, 'storeSession'])->name('academic-sessions.store');
+            Route::post('/academic-sessions/{academicSession}/activate', [AcademicSettingsController::class, 'activateSession'])->name('academic-sessions.activate');
 
-        Route::post('/terms', [AcademicSettingsController::class, 'storeTerm'])->name('terms.store');
-        Route::post('/terms/{term}/activate', [AcademicSettingsController::class, 'activateTerm'])->name('terms.activate');
-        // Timetable Routes
-        Route::get('/timetable', [TimetableController::class, 'index'])->name('timetable.index');
-        Route::post('/timetable', [TimetableController::class, 'store'])->name('timetable.store');
-        Route::delete('/timetable/{timetable}', [TimetableController::class, 'destroy'])->name('timetable.destroy');
-        // Attendance Routes
-        Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
-        Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
-        Route::get('/attendance/export', [AttendanceController::class, 'export'])->name('attendance.export');
-    });
+            Route::post('/terms', [AcademicSettingsController::class, 'storeTerm'])->name('terms.store');
+            Route::post('/terms/{term}/activate', [AcademicSettingsController::class, 'activateTerm'])->name('terms.activate');
+            // Timetable Routes
+            Route::get('/timetable', [TimetableController::class, 'index'])->name('timetable.index');
+            Route::post('/timetable', [TimetableController::class, 'store'])->name('timetable.store');
+            Route::delete('/timetable/{timetable}', [TimetableController::class, 'destroy'])->name('timetable.destroy');
+            // Attendance Routes
+            Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+            Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+            Route::get('/attendance/export', [AttendanceController::class, 'export'])->name('attendance.export');
+        });
+

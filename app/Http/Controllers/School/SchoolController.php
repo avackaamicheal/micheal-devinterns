@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\School;
 
 use App\Models\School;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSchoolRequest;
 use App\Http\Requests\UpdateSchoolRequest;

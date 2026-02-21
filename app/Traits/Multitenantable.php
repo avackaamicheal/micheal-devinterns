@@ -2,7 +2,6 @@
 namespace App\Traits;
 
 use App\Models\Scopes\SchoolScope;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 

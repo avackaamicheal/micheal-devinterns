@@ -44,7 +44,9 @@ class LoginController extends Controller
         }
 
         if ($user->hasRole('SchoolAdmin')) {
-            return route('schooladmin.dashboard');
+            return redirect()->route('schooladmin.dashboard', [
+            'school' => $user->school->slug
+        ]);
         }
 
         if ($user->hasRole('Teacher')) {

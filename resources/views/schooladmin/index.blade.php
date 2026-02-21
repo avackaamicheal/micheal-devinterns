@@ -50,12 +50,12 @@
                     <div class="col-lg-3 col-6">
                         <div class="small-box bg-warning">
                             <div class="inner">
-                                <h3>8</h3> <p>Active Classes</p>
+                                <h3>{{ $count }}</h3> <p>Active Classes</p>
                             </div>
                             <div class="icon">
                                 <i class="fas fa-layer-group"></i>
                             </div>
-                            <a href="{{ route('classLevel.index') }}" class="small-box-footer">View Classes <i class="fas fa-arrow-circle-right"></i></a>
+                            <a href="{{ route('classLevel.index', ['school' => $school->slug]) }}" class="small-box-footer">View Classes <i class="fas fa-arrow-circle-right"></i></a>
                         </div>
                     </div>
 

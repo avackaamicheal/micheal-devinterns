@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\SetActiveSchool;
+use App\Http\Middleware\SetTenantSchool;
 use Illuminate\Foundation\Application;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,7 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
-            'tenant'=>SetActiveSchool::class
+            'tenant'=>SetActiveSchool::class,
+            'active' => SetTenantSchool::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
