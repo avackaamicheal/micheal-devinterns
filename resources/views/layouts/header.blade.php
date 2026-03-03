@@ -312,6 +312,7 @@
                                 <p>
                                     Students
                                     <i class="fas fa-angle-left right"></i>
+                                    <span class="badge badge-info right">$student->count()</span>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
@@ -336,7 +337,6 @@
                                 <i class="nav-icon fas fa-coins"></i>
                                 <p>
                                     Fees
-                                    <span class="badge badge-info right">12</span>
                                 </p>
                             </a>
                         </li>
@@ -345,7 +345,14 @@
                                 <i class="nav-icon fas fa-file-invoice-dollar"></i>
                                 <p>
                                     Invoice
-                                    <span class="badge badge-info right">12</span>
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('finance.reports.index') }}" class="nav-link">
+                                <i class="nav-icon fas fa-chart-pie"></i>
+                                <p>
+                                    Reports
                                 </p>
                             </a>
                         </li>

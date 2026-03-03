@@ -12,6 +12,7 @@ use App\Http\Controllers\Bursar\BursarController;
 use App\Http\Controllers\ClassLevel\ClassLevelController;
 use App\Http\Controllers\Finance\FeeController;
 use App\Http\Controllers\Finance\PaymentController;
+use App\Http\Controllers\Finance\ReportController;
 use App\Http\Controllers\Parent\ParentController;
 use App\Http\Controllers\School\SchoolController;
 use App\Http\Controllers\SchoolAdmin\SchoolAdminController;
@@ -116,5 +117,8 @@ Route::middleware(['auth', 'active', 'role:SchoolAdmin'])
         Route::get('/invoices', [PaymentController::class, 'index'])->name('invoices.index');
         Route::post('/invoices/{invoice}/pay', [PaymentController::class, 'store'])->name('payments.store');
         Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
+        // Finance Reports
+        Route::get('/finance/reports', [ReportController::class, 'index'])->name('finance.reports.index');
+        Route::get('/finance/reports/export', [ReportController::class, 'export'])->name('finance.reports.export');
     });
 
