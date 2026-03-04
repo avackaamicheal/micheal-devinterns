@@ -11,6 +11,7 @@ use App\Http\Controllers\Academic\TimetableController;
 use App\Http\Controllers\Bursar\BursarController;
 use App\Http\Controllers\ClassLevel\ClassLevelController;
 use App\Http\Controllers\Communication\AnnouncementController;
+use App\Http\Controllers\Communication\MessageController;
 use App\Http\Controllers\Finance\FeeController;
 use App\Http\Controllers\Finance\PaymentController;
 use App\Http\Controllers\Finance\ReportController;
@@ -125,5 +126,12 @@ Route::middleware(['auth', 'active', 'role:SchoolAdmin'])
         Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
         Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
         Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+        // Messaging
+        Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+        Route::get('/messages/{thread}', [MessageController::class, 'index'])->name('messages.show');
+        Route::post('/messages/{thread}', [MessageController::class, 'store'])->name('messages.store');
+        Route::post('/messages/thread/create', [MessageController::class, 'createThread'])->name('messages.thread.create');
     });
+
+
 

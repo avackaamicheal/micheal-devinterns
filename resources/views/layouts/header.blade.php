@@ -366,6 +366,14 @@
                                 </p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('messages.index') }}" class="nav-link">
+                                <i class="nav-icon fas fa-envelope"></i>
+                                <p>
+                                    Messages
+                                </p>
+                            </a>
+                        </li>
 
                         <li class="nav-header">SETTINGS</li>
                         <li class="nav-item">
