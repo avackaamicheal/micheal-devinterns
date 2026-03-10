@@ -205,7 +205,7 @@
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                     data-accordion="false">
                     <!-- Add icons to the links using the .nav-icon class
-                                   with font-awesome or any other icon font library -->
+                                       with font-awesome or any other icon font library -->
                     <li class="nav-item menu-open">
                         @if (auth()->user()?->hasRole('SuperAdmin'))
                             <a href="{{ route('superadmin.dashboard') }}" class="nav-link active">
@@ -297,13 +297,28 @@
                         <li class="nav-header">PEOPLE</li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-chalkboard-teacher"></i>
+                            <a href="" class="nav-link">
+                                <i class="nav-icon fas fa-user-graduate"></i>
                                 <p>
                                     Teachers
+                                    <i class="fas fa-angle-left right"></i>
                                     <span class="badge badge-info right">12</span>
                                 </p>
                             </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ route('teachers.index') }}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>All Teachers</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('teachers.assignments') }}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Assignments</p>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
 
                         <li class="nav-item">
@@ -312,7 +327,7 @@
                                 <p>
                                     Students
                                     <i class="fas fa-angle-left right"></i>
-                                    <span class="badge badge-info right">$student->count()</span>
+                                    <span class="badge badge-info right">12</span>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
@@ -330,7 +345,7 @@
                                 </li>
                             </ul>
                         </li>
-                         <li class="nav-header">FINANCE</li>
+                        <li class="nav-header">FINANCE</li>
 
                         <li class="nav-item">
                             <a href="{{ route('fees.index') }}" class="nav-link">

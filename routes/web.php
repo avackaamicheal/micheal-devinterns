@@ -131,6 +131,15 @@ Route::middleware(['auth', 'active', 'role:SchoolAdmin'])
         Route::get('/messages/{thread}', [MessageController::class, 'index'])->name('messages.show');
         Route::post('/messages/{thread}', [MessageController::class, 'store'])->name('messages.store');
         Route::post('/messages/thread/create', [MessageController::class, 'createThread'])->name('messages.thread.create');
+        // Teachers
+        Route::get('/teachers', [TeacherController::class, 'index'])->name('teachers.index');
+        Route::get('/teachers/create', [TeacherController::class, 'create'])->name('teachers.create');
+        Route::post('/teachers', [TeacherController::class, 'store'])->name('teachers.store');
+        Route::get('/teachers/assignments', [TeacherController::class, 'assignments'])->name('teachers.assignments');
+        Route::post('/teachers/{teacher}/assign', [TeacherController::class, 'assign'])->name('teachers.assign');
+        Route::get('/teachers/{teacher}/edit', [TeacherController::class, 'edit'])->name('teachers.edit');
+        Route::put('/teachers/{teacher}', [TeacherController::class, 'update'])->name('teachers.update');
+        Route::delete('/teachers/{teacher}', [TeacherController::class, 'destroy'])->name('teachers.destroy');
     });
 
 
