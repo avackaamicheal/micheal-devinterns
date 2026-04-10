@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Academic;
 
-use App\Models\User;
-use App\Models\ClassLevel;
-use Illuminate\Http\Request;
-use App\Models\ParentProfile;
-use App\Models\StudentProfile;
 use App\Exports\StudentsExport;
-use App\Imports\StudentsImport;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Requests\StoreStudentRequest;
+use App\Imports\StudentsImport;
+use App\Models\ClassLevel;
+use App\Models\ParentProfile;
+use App\Models\School;
+use App\Models\StudentProfile;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StudentAdmissionController extends Controller
 {
@@ -67,7 +68,7 @@ class StudentAdmissionController extends Controller
             StudentProfile::create([
                 'school_id' => session('active_school') ?? Auth::user()->school_id,
                 'user_id' => $studentUser->id,
-                'admission_number' => $request->admission_number,
+                'admission_number' => StudentProfile::generateAdmissionNumber(),
                 'class_level_id' => $request->class_level_id,
                 'section_id' => $request->section_id,
                 'date_of_birth' => $request->dob,
@@ -140,6 +141,13 @@ class StudentAdmissionController extends Controller
         return back()->with('success', 'Student record deleted.');
     }
 
+    public function generateAdmissionNumber(School $school)
+    {
+        return response()->json([
+            'admission_number' => StudentProfile::generateAdmissionNumber()
+        ]);
+    }
+
     public function export()
     {
         return Excel::download(new StudentsExport, 'students.xlsx');
@@ -175,17 +183,24 @@ class StudentAdmissionController extends Controller
     public function downloadTemplate()
     {
         $headers = [
-            'Content-type'        => 'text/csv',
+            'Content-type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename=student_import_template.csv',
-            'Pragma'              => 'no-cache',
-            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires'             => '0'
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
         ];
 
         // The exact headers your Import class is looking for
         $columns = [
-            'first_name', 'last_name', 'email', 'admission_number',
-            'class_level_id', 'section_id', 'date_of_birth', 'gender', 'address'
+            'first_name',
+            'last_name',
+            'email',
+            'admission_number',
+            'class_level_id',
+            'section_id',
+            'date_of_birth',
+            'gender',
+            'address'
         ];
 
         $callback = function () use ($columns) {
@@ -196,8 +211,15 @@ class StudentAdmissionController extends Controller
 
             // 2. Write an Example Row (Helps the admin understand the format)
             fputcsv($file, [
-                'John', 'Doe', 'johndoe@example.com', 'ADM-2026-001',
-                '1', '1', '2010-05-14', 'Male', '123 Learning Ave'
+                'John',
+                'Doe',
+                'johndoe@example.com',
+                'ADM-2026-001',
+                '1',
+                '1',
+                '2010-05-14',
+                'Male',
+                '123 Learning Ave'
             ]);
 
             fclose($file);

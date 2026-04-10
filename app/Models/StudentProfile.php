@@ -13,6 +13,7 @@ class StudentProfile extends Model
     use HasFactory;
 
     protected $fillable = [
+        'school_id',
         'user_id',
         'admission_number',
         'class_level_id',
@@ -32,5 +33,38 @@ class StudentProfile extends Model
     public function classLevel()
     {
         return $this->belongsTo(ClassLevel::class);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(User::class, 'parent_id');
+    }
+
+    public static function generateAdmissionNumber(): string
+    {
+        $school = School::find(session('active_school'));
+
+        $schoolInitials = collect(explode(' ', $school->name))
+            ->map(fn($word) => strtoupper($word[0]))
+            ->implode('');
+
+        $prefix = $schoolInitials . '-STU';
+        $year = date('Y');
+
+        $last = static::withoutGlobalScopes()
+            ->where('school_id', session('active_school'))
+            ->whereYear('created_at', $year)
+            ->where('admission_number', 'like', "{$prefix}%")
+            ->latest()
+            ->first();
+
+        if ($last && $last->admission_number) {
+            $lastNumber = (int) substr($last->admission_number, -4);
+            $next = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $next = '0001';
+        }
+
+        return "{$prefix}-{$year}-{$next}";
     }
 }

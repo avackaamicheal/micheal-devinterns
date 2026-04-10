@@ -108,101 +108,98 @@
 @endsection
 
 @push('scripts')
-    <script>
-        window.openCreateModal = function() {
-            document.getElementById('subject-form').reset();
-            document.getElementById('subject_id').value = '';
-            document.getElementById('modal-title').innerText = 'Add Subject';
-            $('#modal-subject').modal('show');
-        };
+   <script>
+    window.openCreateModal = function() {
+        document.getElementById('subject-form').reset();
+        document.getElementById('subject_id').value = '';
+        document.getElementById('modal-title').innerText = 'Add Subject';
+        $('#modal-subject').modal('show');
+    };
 
-        window.openEditModal = function(id, name, code, desc) {
-            document.getElementById('subject_id').value = id;
-            document.getElementById('name').value = name;
-            document.getElementById('code').value = code;
-            document.getElementById('description').value = desc;
-            document.getElementById('modal-title').innerText = 'Edit Subject';
-            $('#modal-subject').modal('show');
-        };
+    window.openEditModal = function(id, name, code, desc) {
+        document.getElementById('subject_id').value = id;
+        document.getElementById('name').value = name;
+        document.getElementById('code').value = code;
+        document.getElementById('description').value = desc;
+        document.getElementById('modal-title').innerText = 'Edit Subject';
+        $('#modal-subject').modal('show');
+    };
 
-        window.handleFormSubmit = async function(e) {
-            e.preventDefault();
-            let form = e.target;
-            let formData = new FormData(form);
-            let id = document.getElementById('subject_id').value;
-            let url = id ? `/schooladmin/subject/${id}` : `{{ route('subject.store') }}`;
+    window.handleFormSubmit = async function(e) {
+        e.preventDefault();
+        let form = e.target;
+        let formData = new FormData(form);
+        let id = document.getElementById('subject_id').value;
 
-            if (id) formData.append('_method', 'PUT');
-
-            try {
-                let response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: formData
-                });
-
-                let data = await response.json();
-                if (response.ok) {
-                    // 1. Hide the Modal
-                    $('#modal-subject').modal('hide');
-
-                    // 2. Show the Flash Message
-                    window.showFlash('success', data.message);
-
-                    // 3. Optional: Refresh table via AJAX or reload after a short delay
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-
-                } else {
-                    // For non-validation server errors (500, etc.)
-                    window.showFlash('error', 'A server error occurred. Please try again.');
-                }
-            } catch (error) {
-                alert('System Error');
-            }
-        };
-
-
-         window.handleDelete = async function(id) {
-            if (!confirm('Are you sure you want to delete this subject?')) {
-                return;
-            }
-
-            const form = document.getElementById(`delete-form-${id}`);
-            const url = form.action;
-            const formData = new FormData(form);
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST', // Form specifies DELETE via _method, but we send as POST
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    // 1. Trigger the Global Flash Message
-                    window.showFlash('success', data.message || 'Subject deleted successfully.');
-
-                    // 2. Remove the row from the table immediately for a "snappy" feel
-                    // Or reload after a delay if you prefer
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                } else {
-                    window.showFlash('error', 'Could not delete: ' + (data.message || 'Server error'));
-                }
-            } catch (error) {
-                window.showFlash('error', 'System error occurred during deletion.');
-            }
+        // SAFE URL GENERATION: Let Laravel build the route, then swap the ID
+        let url = "{{ route('subject.store') }}";
+        if (id) {
+            let updateUrl = "{{ route('subject.update', ':id') }}";
+            url = updateUrl.replace(':id', id);
+            formData.append('_method', 'PUT');
         }
-    </script>
+
+        try {
+            let response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            let data = await response.json();
+
+            if (response.ok) {
+                $('#modal-subject').modal('hide');
+                window.showFlash('success', data.message);
+
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                // If it's a validation error (422), you can handle it here later
+                window.showFlash('error', data.message || 'A server error occurred. Please try again.');
+            }
+        } catch (error) {
+            window.showFlash('error', 'System Error: Could not connect to the server.');
+        }
+    };
+
+
+    window.handleDelete = async function(id) {
+        if (!confirm('Are you sure you want to delete this subject?')) {
+            return;
+        }
+
+        const form = document.getElementById(`delete-form-${id}`);
+        const url = form.action;
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                window.showFlash('success', data.message || 'Subject deleted successfully.');
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                window.showFlash('error', 'Could not delete: ' + (data.message || 'Server error'));
+            }
+        } catch (error) {
+            window.showFlash('error', 'System error occurred during deletion.');
+        }
+    }
+</script>
 @endpush

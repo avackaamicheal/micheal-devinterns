@@ -20,7 +20,7 @@
 
                 <div class="card card-default">
                     <div class="card-body">
-                        <form action="{{ route('grades.index') }}" method="GET" class="form-inline">
+                        <form action="{{ resolveRoute('grades.index') }}" method="GET" class="form-inline">
                             <label class="mr-2">Class Section:</label>
                             <select name="section_id" class="form-control mr-4" required>
                                 <option value="">-- Choose Class --</option>
@@ -60,7 +60,7 @@
                             </h3>
                         </div>
 
-                        <form action="{{ route('grades.store') }}" method="POST">
+                        <form action="{{ resolveRoute('grades.store') }}" method="POST">
                             @csrf
                             <input type="hidden" name="section_id" value="{{ $selectedSection->id }}">
                             <input type="hidden" name="subject_id" value="{{ $selectedSubject->id }}">

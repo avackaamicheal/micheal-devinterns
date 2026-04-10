@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Subject;
 
 use App\Models\Subject;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSubjectRequest;
 use App\Http\Requests\UpdateSubjectRequest;
@@ -62,7 +61,7 @@ class SubjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateSubjectRequest $request, Subject $subject)
+    public function update(UpdateSubjectRequest $request, $school, Subject $subject)
     {
         $validatedData = $request->validated();
 
@@ -81,6 +80,9 @@ class SubjectController extends Controller
     {
         $subject->delete();
 
-        return back()->with('success', 'Subject deleted successfully.');
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Subject deleted successfully.'
+        ]);
     }
 }

@@ -71,13 +71,18 @@
                                             {{ $teacher->teacherProfile->qualification ?? 'N/A' }}
                                         </td>
                                         <td class="align-middle">
-                                            @if ($teacher->teacherProfile?->classLevel)
-                                                <span class="badge badge-success p-2">
-                                                    {{ $teacher->teacherProfile->classLevel->name }}
-                                                    @if ($teacher->teacherProfile->section)
-                                                        - {{ $teacher->teacherProfile->section->name }}
-                                                    @endif
-                                                </span>
+                                            @if ($teacher->allocations->count() > 0)
+                                                @foreach ($teacher->allocations as $allocation)
+                                                    <div class="mb-1">
+                                                        <span class="badge badge-info">
+                                                            {{ $allocation->subject->name }}
+                                                        </span>
+                                                        <small class="text-muted">
+                                                            {{ $allocation->section->classLevel->name ?? '' }}
+                                                            - {{ $allocation->section->name ?? '' }}
+                                                        </small>
+                                                    </div>
+                                                @endforeach
                                             @else
                                                 <span class="badge badge-warning">Unassigned</span>
                                             @endif

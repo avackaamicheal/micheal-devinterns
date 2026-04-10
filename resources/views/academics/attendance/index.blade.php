@@ -13,7 +13,7 @@
 
                 <div class="card card-default">
                     <div class="card-body">
-                        <form action="{{ route('attendance.index') }}" method="GET" class="form-inline">
+                        <form action="{{ route($routes['index']) }}" method="GET" class="form-inline">
                             <label class="mr-2">Class Section:</label>
                             <select name="section_id" class="form-control mr-3" required>
                                 <option value="">-- Choose Class --</option>
@@ -44,14 +44,14 @@
                                 <strong>{{ \Carbon\Carbon::parse($date)->format('M d, Y') }}</strong>
                             </h3>
                             <div class="card-tools">
-                                <a href="{{ route('attendance.export', ['section_id' => $selectedSection->id, 'date' => $date]) }}"
+                                <a href="{{ route($routes['export'], ['section_id' => $selectedSection->id, 'date' => $date]) }}"
                                     class="btn btn-sm btn-outline-success">
                                     <i class="fas fa-file-excel"></i> Export to Excel
                                 </a>
                             </div>
                         </div>
 
-                        <form action="{{ route('attendance.store') }}" method="POST">
+                        <form action="{{ route($routes['store']) }}" method="POST">
                             @csrf
                             <input type="hidden" name="section_id" value="{{ $selectedSection->id }}">
                             <input type="hidden" name="date" value="{{ $date }}">

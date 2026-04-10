@@ -179,9 +179,14 @@
             let form = e.target;
             let formData = new FormData(form);
             let id = document.getElementById('section_id').value;
-            let url = id ? `/schooladmin/section/${id}` : `{{ route('section.store') }}`;
 
-            if (id) formData.append('_method', 'PUT');
+
+            let url = "{{ route('section.store') }}";
+            if (id) {
+                let updateUrl = "{{ route('section.update', ':id') }}";
+                url = updateUrl.replace(':id', id);
+                formData.append('_method', 'PUT');
+            }
 
             try {
                 let response = await fetch(url, {

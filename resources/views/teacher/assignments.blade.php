@@ -16,19 +16,21 @@
 
     <section class="content">
         <div class="container-fluid">
-            @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
 
             <div class="card card-outline card-primary">
                 <div class="card-header">
-                    <h3 class="card-title">Assign Teachers to Classes</h3>
+                    <h3 class="card-title">Assign Teachers to Subjects & Classes</h3>
                 </div>
                 <div class="card-body table-responsive p-0">
                     <table class="table table-hover table-striped">
                         <thead>
                             <tr>
-                                <th style="width: 25%">Teacher</th>
-                                <th style="width: 25%">Current Assignment</th>
-                                <th style="width: 50%">Update Assignment</th>
+                                <th style="width: 20%">Teacher</th>
+                                <th style="width: 20%">Current Assignments</th>
+                                <th style="width: 60%">Add New Assignment</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -36,50 +38,80 @@
                                 <tr>
                                     <td class="align-middle">
                                         <div class="font-weight-bold">{{ $teacher->name }}</div>
-                                        <div class="text-muted text-sm">{{ $teacher->email }}</div>
+                                        <div class="text-muted text-sm">
+                                            {{ $teacher->teacherProfile->employee_id ?? 'N/A' }}
+                                        </div>
+                                        <div class="text-muted text-sm">
+                                            {{ $teacher->teacherProfile->qualification ?? 'N/A' }}
+                                        </div>
                                     </td>
                                     <td class="align-middle">
-                                        @if($teacher->teacherProfile?->classLevel)
-                                            <span class="badge badge-success p-2">
-                                                {{ $teacher->teacherProfile->classLevel->name }}
-                                                @if($teacher->teacherProfile->section)
-                                                    - {{ $teacher->teacherProfile->section->name }}
-                                                @endif
-                                            </span>
-                                        @else
+                                        @forelse($teacher->allocations as $allocation)
+                                            <div class="mb-1">
+                                                <span class="badge badge-info">
+                                                    {{ $allocation->subject->name }}
+                                                </span>
+                                                <small class="text-muted">
+                                                    {{ $allocation->section->classLevel->name ?? '' }}
+                                                    - {{ $allocation->section->name ?? '' }}
+                                                </small>
+                                                <form action="{{ route('teachers.allocations.destroy', [$teacher->id, $allocation->id]) }}"
+                                                    method="POST" class="d-inline">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit"
+                                                        class="btn btn-xs btn-danger ml-1"
+                                                        onclick="return confirm('Remove this assignment?')">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @empty
                                             <span class="badge badge-warning">Unassigned</span>
-                                        @endif
+                                        @endforelse
                                     </td>
                                     <td class="align-middle">
-                                        <form action="{{ route('teachers.assign', $teacher->id) }}" method="POST">
+                                        <form action="{{ route('teachers.assign', $teacher->id) }}"
+                                            method="POST">
                                             @csrf
-                                            <div class="d-flex align-items-center gap-2">
-                                                <select name="class_level_id" class="form-control form-control-sm mr-2 class-select" data-teacher="{{ $teacher->id }}" required>
-                                                    <option value="">-- Class --</option>
-                                                    @foreach($classLevels as $class)
-                                                        <option value="{{ $class->id }}"
-                                                            {{ $teacher->teacherProfile?->class_level_id == $class->id ? 'selected' : '' }}>
-                                                            {{ $class->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                            <div class="d-flex align-items-start flex-wrap gap-2">
 
-                                                <select name="section_id" class="form-control form-control-sm mr-2 section-select" id="sections-{{ $teacher->id }}">
-                                                    <option value="">-- Section (optional) --</option>
-                                                    @foreach($classLevels as $class)
-                                                        @foreach($class->sections as $section)
-                                                            <option value="{{ $section->id }}"
-                                                                data-class="{{ $class->id }}"
-                                                                {{ $teacher->teacherProfile?->section_id == $section->id ? 'selected' : '' }}>
-                                                                {{ $section->name }}
+                                                {{-- Subject --}}
+                                                <div class="mr-2" style="min-width: 150px;">
+                                                    <label class="text-muted text-sm mb-1">Subject</label>
+                                                    <select name="subject_id" class="form-control form-control-sm" required>
+                                                        <option value="">-- Subject --</option>
+                                                        @foreach($subjects as $subject)
+                                                            <option value="{{ $subject->id }}">
+                                                                {{ $subject->name }}
                                                             </option>
                                                         @endforeach
-                                                    @endforeach
-                                                </select>
+                                                    </select>
+                                                </div>
 
-                                                <button type="submit" class="btn btn-sm btn-primary">
-                                                    <i class="fas fa-save"></i> Save
-                                                </button>
+                                                {{-- Class & Section --}}
+                                                <div class="mr-2" style="min-width: 180px;">
+                                                    <label class="text-muted text-sm mb-1">Class & Section</label>
+                                                    <select name="section_id" class="form-control form-control-sm" required>
+                                                        <option value="">-- Section --</option>
+                                                        @foreach($classLevels as $class)
+                                                            <optgroup label="{{ $class->name }}">
+                                                                @foreach($class->sections as $section)
+                                                                    <option value="{{ $section->id }}">
+                                                                        {{ $class->name }} - {{ $section->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                {{-- Save --}}
+                                                <div style="margin-top: 22px;">
+                                                    <button type="submit" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-plus"></i> Assign
+                                                    </button>
+                                                </div>
+
                                             </div>
                                         </form>
                                     </td>
@@ -87,7 +119,8 @@
                             @empty
                                 <tr>
                                     <td colspan="3" class="text-center p-4">
-                                        No teachers found. <a href="{{ route('teachers.index') }}">Add teachers first.</a>
+                                        No teachers found.
+                                        <a href="{{ route('teachers.create') }}">Add teachers first.</a>
                                     </td>
                                 </tr>
                             @endforelse
@@ -98,26 +131,4 @@
         </div>
     </section>
 </div>
-
-<script>
-const classData = @json($classLevels->keyBy('id'));
-
-// Filter sections when class changes
-document.querySelectorAll('.class-select').forEach(function(select) {
-    select.addEventListener('change', function() {
-        const teacherId = this.dataset.teacher;
-        const classId = this.value;
-        const sectionSelect = document.getElementById('sections-' + teacherId);
-
-        // Reset sections
-        sectionSelect.innerHTML = '<option value="">-- Section (optional) --</option>';
-
-        if (classId && classData[classId]?.sections?.length > 0) {
-            classData[classId].sections.forEach(function(section) {
-                sectionSelect.innerHTML += `<option value="${section.id}">${section.name}</option>`;
-            });
-        }
-    });
-});
-</script>
 @endsection

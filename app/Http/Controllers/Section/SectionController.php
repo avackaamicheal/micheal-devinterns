@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Section;
 
 use App\Models\Section;
 use App\Models\ClassLevel;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSectionRequest;
 use App\Http\Requests\UpdateSectionRequest;
@@ -71,7 +70,7 @@ class SectionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateSectionRequest $request, Section $section)
+    public function update(UpdateSectionRequest $request, $school, Section $section)
     {
         $validatedData = $request->validated();
 
@@ -86,7 +85,7 @@ class SectionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Section $section)
+    public function destroy($school, Section $section)
     {
         $section->delete();
 

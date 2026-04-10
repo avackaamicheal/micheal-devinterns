@@ -151,14 +151,19 @@
             $('#modal-class').modal('show');
         }
 
-        window.handleFormSubmit = async function(e) {
+       window.handleFormSubmit = async function(e) {
             e.preventDefault();
             let form = e.target;
             let formData = new FormData(form);
             let id = document.getElementById('class_id').value;
-            let url = id ? `/schooladmin/classLevel/${id}` : `{{ route('classLevel.store') }}`;
 
-            if (id) formData.append('_method', 'PUT');
+            // SAFE URL GENERATION: Let Laravel build the route with the school slug
+            let url = "{{ route('classLevel.store') }}";
+            if (id) {
+                let updateUrl = "{{ route('classLevel.update', ':id') }}";
+                url = updateUrl.replace(':id', id);
+                formData.append('_method', 'PUT');
+            }
 
             try {
                 let response = await fetch(url, {
@@ -173,19 +178,13 @@
                 let data = await response.json();
 
                 if (response.status === 422) {
-                    // Validation errors stay in the modal error-box
                     let errorBox = document.getElementById('error-box');
                     let errorList = document.getElementById('error-list');
                     errorBox.classList.remove('d-none');
                     errorList.innerHTML = Object.values(data.errors).flat().map(msg => `<li>${msg}</li>`).join('');
                 } else if (response.ok) {
-                    // 1. Hide the Modal
                     $('#modal-class').modal('hide');
-
-                    // 2. Trigger the Global Flash Message
                     window.showFlash('success', data.message);
-
-                    // 3. Reload after the user has had time to read it
                     setTimeout(() => {
                         location.reload();
                     }, 1500);

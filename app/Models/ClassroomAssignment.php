@@ -36,4 +36,16 @@ class ClassroomAssignment extends Model
     {
         return $this->belongsTo(Subject::class);
     }
+
+    public function classLevel()
+    {
+        return $this->hasOneThrough(
+            ClassLevel::class,
+            Section::class,
+            'id',            // sections.id
+            'id',            // class_levels.id
+            'section_id',    // classroom_assignments.section_id
+            'class_level_id' // sections.class_level_id
+        );
+    }
 }

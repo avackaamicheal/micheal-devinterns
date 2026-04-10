@@ -67,7 +67,7 @@ class ClassLevelController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateClassLevelRequest $request, ClassLevel $classLevel)
+    public function update(UpdateClassLevelRequest $request, $school, ClassLevel $classLevel)
     {
 
         $valdatedData = $request->validated();
@@ -83,11 +83,15 @@ class ClassLevelController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ClassLevel $classLevel)
+    public function destroy($school, ClassLevel $classLevel)
     {
        // The database cascade will handle deleting related sections automatically
         $classLevel->delete();
 
-        return back()->with('success', 'Class Level deleted successfully.');
+        // RETURN JSON INSTEAD OF back()
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Class Level deleted successfully.'
+        ]);
     }
 }

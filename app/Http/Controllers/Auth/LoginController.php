@@ -35,45 +35,40 @@ class LoginController extends Controller
     public function redirectTo()
     {
         // 1. Get the currently authenticated user
-        $user = auth()->user();
+       $user = Auth::user();
 
-        // 2. Check Roles and Return Specific Routes
-        // Note: Make sure these route names exist in your web.php
         if ($user->hasRole('SuperAdmin')) {
             return route('superadmin.dashboard');
         }
 
-        if ($user->hasRole('SchoolAdmin')) {
-            
-            // 1. Safely check if the user actually has a school attached
-            if ($user->school && $user->school->slug) {
-                return redirect()->route('schooladmin.dashboard', [
-                    'school' => trim($user->school->slug)
-                ]);
-            }
+        $slug = trim($user->school->slug ?? '');
 
-            // 2. Graceful fallback if the database data is missing/corrupted
+        if (!$slug) {
             Auth::logout();
-            return redirect()->route('login')->with('error', 'Configuration Error: Your account is not assigned to a valid school. Please contact the SuperAdmin.');
+            return route('login');
+        }
+
+        if ($user->hasRole('SchoolAdmin')) {
+            return route('schooladmin.dashboard', ['school' => $slug]);
         }
 
         if ($user->hasRole('Teacher')) {
-            // return route('teacher.dashboard'); // Uncomment when you build this
-            return '/teacher.dashboard';
+            return route('teacher.dashboard', ['school' => $slug]);
         }
 
         if ($user->hasRole('Student')) {
-            // return route('student.dashboard'); // Uncomment when you build this
-            return '/student/home';
+            return route('student.dashboard', ['school' => $slug]);
         }
 
         if ($user->hasRole('Parent')) {
-            return '/parent/home';
+            return route('parent.dashboard', ['school' => $slug]);
         }
 
-        // 3. Default Fallback
-        return '/home';
+        Auth::logout();
+        return route('login');
     }
+
+
 
     /**
      * Create a new controller instance.

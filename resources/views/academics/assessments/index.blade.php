@@ -20,7 +20,7 @@
 
                 <div class="card">
                     <div class="card-body">
-                        <form action="{{ route('assessments.index') }}" method="GET" class="form-inline">
+                        <form action="{{ resolveRoute('assessments.index') }}" method="GET" class="form-inline">
                             <label class="mr-3">Select Subject:</label>
                             <select name="subject_id" class="form-control mr-3" required>
                                 <option value="">-- Choose Subject --</option>
@@ -42,7 +42,7 @@
                             <h3 class="card-title">Grading Formula for: <strong>{{ $selectedSubject->name }}</strong></h3>
                         </div>
 
-                        <form action="{{ route('assessments.store') }}" method="POST">
+                        <form action="{{ resolveRoute('assessments.store') }}" method="POST">
                             @csrf
                             <input type="hidden" name="subject_id" value="{{ $selectedSubject->id }}">
 

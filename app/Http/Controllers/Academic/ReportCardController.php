@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 class ReportCardController extends Controller
 {
     // 1. Show the Class Selection and Student List
-    public function index(Request $request)
+    public function index(Request $request, School $school)
     {
         $sections = Section::with('classLevel')->get();
         $selectedSection = null;
@@ -22,9 +22,19 @@ class ReportCardController extends Controller
 
         if ($request->has('section_id')) {
             $selectedSection = Section::find($request->section_id);
-            $students = User::role('Student')->whereHas('studentProfile', function ($query) use ($selectedSection) {
-                $query->where('section_id', $selectedSection->id);
-            })->with('studentProfile')->get();
+            $activeTerm = Term::where('is_active', true)->first();
+
+            $students = User::role('Student')
+                ->whereHas('studentProfile', function ($query) use ($selectedSection) {
+                    $query->where('section_id', $selectedSection->id);
+                })
+                ->with([
+                    'studentProfile',
+                    'grades' => function ($q) use ($activeTerm) {
+                        $q->where('term_id', $activeTerm?->id);
+                    }
+                ])
+                ->get();
         }
 
         return view('academics.reports.index', compact('sections', 'selectedSection', 'students'));

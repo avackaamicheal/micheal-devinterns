@@ -29,7 +29,7 @@
                                                 ->count();
                                         @endphp
                                         <li class="nav-item border-bottom">
-                                            <a href="{{ route('messages.show', $thread->id) }}"
+                                            <a href="{{ resolveRoute('messages.show', $thread->id) }}"
                                                 class="nav-link {{ isset($activeThread) && $activeThread->id == $thread->id ? 'bg-light' : '' }}">
                                                 <div class="d-flex justify-content-between">
                                                     <span class="font-weight-bold text-dark">{{ $otherUser->name }}</span>
@@ -91,7 +91,7 @@
                                 </div>
 
                                 <div class="card-footer">
-                                    <form action="{{ route('messages.store', $activeThread->id) }}" method="POST"
+                                    <form action="{{ resolveRoute('messages.store', $activeThread->id) }}" method="POST"
                                         enctype="multipart/form-data">
                                         @csrf
                                         <div class="input-group">

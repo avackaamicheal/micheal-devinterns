@@ -28,6 +28,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'school_id'
     ];
 
     /**
@@ -102,5 +103,30 @@ class User extends Authenticatable
     public function grades()
     {
         return $this->hasMany(GradeRecord::class, 'student_id');
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(\App\Models\Invoice::class, 'student_id');
+    }
+
+    public function allocations()
+    {
+        return $this->hasMany(ClassroomAssignment::class, 'teacher_id');
+    }
+
+
+    // In User.php
+    public function allowedSectionIds(): array
+    {
+        if ($this->hasRole('SchoolAdmin')) {
+            return Section::pluck('id')->toArray();
+        }
+
+        if ($this->hasRole('Teacher')) {
+            return $this->allocations()->pluck('section_id')->toArray();
+        }
+
+        return [];
     }
 }

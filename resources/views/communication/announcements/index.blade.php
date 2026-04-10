@@ -21,7 +21,7 @@
                                 <h3 class="card-title">New Announcement</h3>
                             </div>
                             <div class="card-body">
-                                <form action="{{ route('announcements.store') }}" method="POST">
+                                <form action="{{ resolveRoute('announcements.store') }}" method="POST">
                                     @csrf
                                     <div class="form-group">
                                         <label>Title</label>
@@ -80,7 +80,7 @@
                                                         <span class="badge badge-success">Everyone</span>
                                                     @endif
 
-                                                    <form action="{{ route('announcements.destroy', $post->id) }}"
+                                                    <form action="{{ resolveRoute('announcements.destroy', $post->id) }}"
                                                         method="POST" class="d-inline ml-2">
                                                         @csrf @method('DELETE')
                                                         <button type="submit" class="btn btn-xs btn-danger"

@@ -5,37 +5,71 @@ namespace App\Http\Controllers\Academic;
 use App\Exports\DailyAttendanceExport;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\School;
 use App\Models\Section;
 use App\Models\Term;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AttendanceController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, School $school)
     {
-        $sections = Section::with('classLevel')->get();
-        $selectedSection = null;
+        $user = Auth::user();
+
+        $isTeacher = $user->hasRole('Teacher');
+
+        // Route names based on role
+        $routes = [
+            'index' => $isTeacher ? 'teacher.attendance.index' : 'admin.attendance.index',
+            'store' => $isTeacher ? 'teacher.attendance.store' : 'admin.attendance.store',
+            'export' => $isTeacher ? 'teacher.attendance.export' : 'admin.attendance.export',
+        ];
+
+        $allowedSectionIds = $user->allowedSectionIds();
+
+        $sections = Section::with('classLevel')
+            ->whereIn('id', $allowedSectionIds)
+            ->get();
+
+        $requestedSectionId = $request->section_id;
+        $date = $request->date ?? date('Y-m-d');
+
+        // Security check
+        if ($requestedSectionId && !in_array((int) $requestedSectionId, $allowedSectionIds)) {
+            abort(403, 'Unauthorized: You are not assigned to this classroom.');
+        }
+
+        $selectedSection = $requestedSectionId
+            ? Section::with('classLevel')->find($requestedSectionId)
+            : null;
+
         $students = collect();
         $attendances = [];
 
-        $date = $request->date ?? date('Y-m-d');
+        if ($selectedSection) {
+            $students = User::role('Student')
+                ->whereHas('studentProfile', function ($query) use ($requestedSectionId) {
+                    $query->where('section_id', $requestedSectionId);
+                })->with('studentProfile')->get();
 
-        if ($request->has('section_id') && $request->section_id != '') {
-            $selectedSection = Section::find($request->section_id);
-
-            $students = User::role('Student')->whereHas('studentProfile', function ($query) use ($selectedSection) {
-                $query->where('section_id', $selectedSection->id);
-            })->with('studentProfile')->get();
-
-            $attendances = Attendance::where('section_id', $selectedSection->id)
+            // Load existing attendance records for this date
+            $attendances = Attendance::where('section_id', $requestedSectionId)
                 ->where('date', $date)
                 ->get()
                 ->keyBy('student_id');
         }
 
-        return view('academics.attendance.index', compact('sections', 'selectedSection', 'students', 'date', 'attendances'));
+        return view('academics.attendance.index', compact(
+            'sections',
+            'students',
+            'selectedSection',
+            'attendances',
+            'date',
+            'routes'
+        ));
     }
 
     public function store(Request $request)

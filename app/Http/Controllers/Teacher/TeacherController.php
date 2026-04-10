@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTeacherRequest;
 use App\Http\Requests\UpdateTeacherRequest;
 use App\Models\ClassLevel;
+use App\Models\ClassroomAssignment;
 use App\Models\School;
+use App\Models\Subject;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -19,8 +21,13 @@ class TeacherController extends Controller
     {
         $teachers = User::role('Teacher')
             ->where('school_id', session('active_school'))
-            ->with(['teacherProfile.classLevel', 'teacherProfile.section'])
+            ->with([
+                'teacherProfile',
+                'allocations.subject',
+                'allocations.section.classLevel',
+            ])
             ->get();
+
 
         return view('teacher.index', compact('teachers'));
     }
@@ -119,32 +126,44 @@ class TeacherController extends Controller
     {
         $teachers = User::role('Teacher')
             ->where('school_id', session('active_school'))
-            ->with(['teacherProfile.classLevel', 'teacherProfile.section'])
+            ->with([
+                'teacherProfile',
+                'allocations.subject',
+                'allocations.section.classLevel'
+            ])
             ->get();
 
         $classLevels = ClassLevel::with('sections')->get();
+        $subjects = Subject::all();
 
-        return view('teacher.assignments', compact('teachers', 'classLevels'));
+        return view('teacher.assignments', compact('teachers', 'classLevels', 'subjects'));
     }
 
     public function assign(School $school, User $teacher, Request $request)
     {
         $request->validate([
-        'class_level_id' => 'required|exists:class_levels,id',
-        'section_id'     => 'nullable|exists:sections,id',
-    ]);
+            'subject_id' => 'required|exists:subjects,id',
+            'section_id' => 'required|exists:sections,id',
+        ]);
 
-    // Create profile if it doesn't exist for some reason
-    $profile = $teacher->teacherProfile ?? TeacherProfile::create([
-        'user_id'   => $teacher->id,
-        'school_id' => session('active_school'),
-    ]);
+        try {
+            ClassroomAssignment::create([
+                'teacher_id' => $teacher->id,
+                'subject_id' => $request->subject_id,
+                'section_id' => $request->section_id,
+            ]);
 
-    $profile->update([
-        'class_level_id' => $request->class_level_id,
-        'section_id'     => $request->section_id ?? null,
-    ]);
+            return back()->with('success', $teacher->name . ' assigned successfully!');
 
-    return back()->with('success', $teacher->name . ' assigned successfully!');
+        } catch (\Illuminate\Database\QueryException $e) {
+            return back()->with('error', 'This teacher is already assigned to this subject in this section.');
+        }
+
+    }
+
+    public function destroyAllocation(School $school, User $teacher, ClassroomAssignment $allocation)
+    {
+        $allocation->delete();
+        return back()->with('success', 'Assignment removed successfully!');
     }
 }
