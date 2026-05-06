@@ -28,14 +28,18 @@ class TimetableController extends Controller
         // Teachers — admins see all, teachers only see themselves
         $teachers = $user->hasRole('Teacher')
             ? User::where('id', $user->id)->get()
-            : User::role('Teacher')->get();
+            : User::role('Teacher')
+            ->where('school_id', session('active_school'))
+            ->get();
 
         $subjects = Subject::all();
         $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
         $timetableGrid = [];
         $activeFilter = null;
         $selectedEntity = null;
-        $activeTerm = Term::where('is_active', true)->first();
+        $activeTerm = Term::where('is_active', true)
+        ->where('school_id', session('active_school'))
+        ->first();
 
         // SCENARIO A: Searching by Class Section
         if ($request->has('section_id') && $request->section_id != '') {
@@ -110,7 +114,9 @@ class TimetableController extends Controller
 
     public function store(StoreTimetableRequest $request, School $school)
     {
-        $activeTerm = Term::where('is_active', true)->first();
+        $activeTerm = Term::where('is_active', true)
+        ->where('school_id', session('active_school'))
+        ->first();
 
         if (!$activeTerm) {
             return back()->with('error', 'Please set an active Term in Academic Settings first.');

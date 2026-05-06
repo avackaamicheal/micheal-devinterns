@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class ParentProfile extends Model
 {
-    protected $fillable = ['user_id'];
+    protected $fillable = ['user_id', 'occupation', 'alt_phone', 'address'];
 }

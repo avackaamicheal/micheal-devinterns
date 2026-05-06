@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Academic;
 
 use App\Http\Controllers\Controller;
 use App\Models\AcademicSession;
+use App\Models\School;
 use App\Models\Term;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AcademicSettingsController extends Controller
 {
@@ -23,7 +25,13 @@ class AcademicSettingsController extends Controller
     public function storeSession(Request $request)
     {
         $request->validate([
-            'name'       => 'required|string|unique:academic_sessions,name', // e.g., 2025/2026
+            'name'       => [
+                'required',
+                'string',
+                Rule::unique('academic_sessions','name')
+                ->where('school_id', session('active_school'))
+
+            ], // e.g., 2025/2026
             'start_date' => 'required|date',
             'end_date'   => 'required|date|after:start_date',
         ]);
@@ -34,11 +42,16 @@ class AcademicSettingsController extends Controller
     }
 
     // --- CREATE A NEW TERM ---
-    public function storeTerm(Request $request)
+    public function storeTerm(Request $request, School $school)
     {
         $request->validate([
             'academic_session_id' => 'required|exists:academic_sessions,id',
-            'name'                => 'required|string', // e.g., First Term
+            'name'                => [
+                'required',
+                'string',
+                Rule::unique('terms', 'name')
+                ->where('academic_session_id', $request->academic_session_id)
+            ] // e.g., First Term
         ]);
 
         Term::create($request->only('academic_session_id', 'name'));
@@ -47,13 +60,13 @@ class AcademicSettingsController extends Controller
     }
 
     // --- ACTIVATE METHODS (From earlier) ---
-    public function activateSession(AcademicSession $academicSession)
+    public function activateSession(School $school,AcademicSession $academicSession)
     {
         $academicSession->makeActive();
         return back()->with('success', "{$academicSession->name} is now the active academic session.");
     }
 
-    public function activateTerm(Term $term)
+    public function activateTerm(Request $request, School $school, Term $term)
     {
         $term->makeActive();
         return back()->with('success', "{$term->name} is now the active term.");

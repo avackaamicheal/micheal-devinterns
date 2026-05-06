@@ -2,31 +2,32 @@
 
 @section('content')
     <div class="content-wrapper">
-        <div class="content-header border-bottom mb-4 bg-white">
+        <div class="content-header bg-white border-bottom mb-4 pb-3 pt-4">
             <div class="container-fluid">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h1 class="m-0 font-weight-bold"><i class="fas fa-home text-primary mr-2"></i> Family Portal</h1>
+                        <h1 class="m-0 font-weight-bold text-dark">
+                            <i class="fas fa-home text-primary mr-2"></i> Family Portal
+                        </h1>
                         <p class="text-muted mb-0">
-                            Welcome back, {{ $parent->name }} &nbsp;|&nbsp; {{ now()->format('l, F j, Y') }}
+                            Welcome back, {{ $parent->name }} &nbsp;|&nbsp;
+                            {{ now()->format('l, F j, Y') }}
                         </p>
                     </div>
-
-                    {{-- THE MASTER TOGGLE (CHILD SELECTOR) --}}
-                    @if(isset($children) && $children->count() > 1)
-                        <form action="{{ route('parent.dashboard') }}" method="GET" class="form-inline m-0">
-                            <label class="mr-2 font-weight-bold text-primary"><i class="fas fa-child mr-1"></i> Viewing:</label>
-                            <select name="child_id" class="form-control border-primary text-primary font-weight-bold shadow-sm" onchange="this.form.submit()" style="border-radius: 8px;">
-                                @foreach($children as $child)
-                                    <option value="{{ $child->id }}" {{ $activeChild->id == $child->id ? 'selected' : '' }}>
-                                        {{ $child->name }} ({{ $child->studentProfile->section->name ?? 'N/A' }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </form>
-                    @else
-                        <h5 class="text-primary font-weight-bold m-0"><i class="fas fa-child mr-1"></i> Viewing: {{ $activeChild->name ?? 'Student' }}</h5>
-                    @endif
+                    <div class="text-right">
+                        @if ($activeTerm)
+                            <span class="badge badge-success px-3 py-2" style="border-radius: 20px;">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                {{ $activeTerm->name }}
+                            </span>
+                        @endif
+                        @if ($unreadMessages > 0)
+                            <span class="badge badge-danger px-3 py-2 ml-2" style="border-radius: 20px;">
+                                <i class="fas fa-envelope mr-1"></i>
+                                {{ $unreadMessages }} Unread
+                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -34,78 +35,132 @@
         <section class="content">
             <div class="container-fluid">
 
-                {{-- AT A GLANCE STATS (4 Cards) --}}
-                <div class="row">
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box {{ $outstandingBalance > 0 ? 'bg-danger' : 'bg-success' }}">
-                            <div class="inner">
-                                <h3>₦{{ number_format($outstandingBalance) }}</h3>
-                                <p>{{ $outstandingBalance > 0 ? 'Outstanding Fees' : 'All Fees Paid' }}</p>
+                {{-- Overall Summary Banner --}}
+                @if ($children->count() > 1)
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card bg-gradient-primary shadow-sm mb-0">
+                                <div class="card-body py-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h5 class="text-white mb-0 font-weight-bold">
+                                                <i class="fas fa-users mr-2"></i>
+                                                {{ $children->count() }} Children Enrolled
+                                            </h5>
+                                            <small class="text-white-50">
+                                                Scroll down to view each child's full report
+                                            </small>
+                                        </div>
+                                        <div class="text-right">
+                                            <h4 class="text-white mb-0 font-weight-bold">
+                                                ₦{{ number_format($totalOutstanding) }}
+                                            </h4>
+                                            <small class="text-white-50">Total Outstanding Fees</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="icon"><i class="fas fa-file-invoice-dollar"></i></div>
-                            <a href="#" class="small-box-footer">
-                                {{ $outstandingBalance > 0 ? 'Pay Now' : 'View Receipts' }} <i class="fas fa-arrow-circle-right"></i>
-                            </a>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Loop through each child --}}
+                @foreach ($childrenData as $data)
+                    @php
+                        $child = $data['student'];
+                        $invoices = $data['invoices'];
+                    @endphp
+
+                    {{-- Child Header --}}
+                    <div class="d-flex align-items-center mb-3 mt-4">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mr-3"
+                            style="width: 45px; height: 45px; font-size: 1.2em; font-weight: bold;">
+                            {{ strtoupper(substr($child->name, 0, 1)) }}
+                        </div>
+                        <div>
+                            <h4 class="mb-0 font-weight-bold">{{ $child->name }}</h4>
+                            <small class="text-muted">
+                                {{ $data['classLevel']->name ?? 'N/A' }} —
+                                {{ $data['section']->name ?? 'N/A' }} &nbsp;|&nbsp;
+                                Admission: {{ $child->studentProfile->admission_number ?? 'N/A' }}
+                            </small>
                         </div>
                     </div>
 
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box {{ $attendanceRate >= 75 ? 'bg-info' : 'bg-warning' }}">
-                            <div class="inner">
-                                <h3>{{ $attendanceRate }}%</h3>
-                                <p>Term Attendance Rate</p>
+                    {{-- Stats Cards --}}
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box {{ $data['outstandingBalance'] > 0 ? 'bg-danger' : 'bg-success' }}">
+                                <div class="inner">
+                                    <h3>₦{{ number_format($data['outstandingBalance']) }}</h3>
+                                    <p>{{ $data['outstandingBalance'] > 0 ? 'Outstanding Fees' : 'Fees Cleared' }}</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                                <a href="#fees-{{ $child->id }}" class="small-box-footer">
+                                    {{ $data['outstandingBalance'] > 0 ? 'Pay Now' : 'View Receipts' }}
+                                    <i class="fas fa-arrow-circle-right"></i>
+                                </a>
                             </div>
-                            <div class="icon"><i class="fas fa-user-check"></i></div>
-                            <a href="#" class="small-box-footer">
-                                View Attendance Log <i class="fas fa-arrow-circle-right"></i>
-                            </a>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box {{ $data['termRate'] >= 75 ? 'bg-info' : 'bg-warning' }}">
+                                <div class="inner">
+                                    <h3>{{ $data['termRate'] }}%</h3>
+                                    <p>Term Attendance Rate</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-user-check"></i></div>
+                                <a href="#attendance-{{ $child->id }}" class="small-box-footer">
+                                    View Breakdown <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-primary">
+                                <div class="inner">
+                                    <h3>{{ $data['average'] ?? 'N/A' }}{{ $data['average'] ? '%' : '' }}</h3>
+                                    <p>Term Average</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-graduation-cap"></i></div>
+                                <a href="#grades-{{ $child->id }}" class="small-box-footer">
+                                    View Grades <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div
+                                class="small-box {{ $data['todayAttendance']?->status == 'PRESENT' ? 'bg-success' : ($data['todayAttendance']?->status == 'ABSENT' ? 'bg-danger' : 'bg-secondary') }}">
+                                <div class="inner">
+                                    <h3>{{ $data['todayAttendance']?->status ?? 'N/A' }}</h3>
+                                    <p>Today's Attendance</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-calendar-day"></i></div>
+                                <a href="#attendance-{{ $child->id }}" class="small-box-footer">
+                                    View Log <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box {{ $pendingTasks > 0 ? 'bg-warning' : 'bg-success' }}">
-                            <div class="inner">
-                                <h3>{{ $pendingTasks > 0 ? $pendingTasks : 'None' }}</h3>
-                                <p>Pending Assignments</p>
-                            </div>
-                            <div class="icon"><i class="fas fa-tasks"></i></div>
-                            <a href="#" class="small-box-footer">
-                                View Homework <i class="fas fa-arrow-circle-right"></i>
-                            </a>
-                        </div>
-                    </div>
+                    <div class="row">
+                        {{-- Left Column --}}
+                        <div class="col-md-8">
 
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-primary">
-                            <div class="inner">
-                                <h3>{{ $latestGrade->score ?? 'N/A' }}</h3>
-                                <p>Latest Grade ({{ $latestGrade->subject->name ?? 'Pending' }})</p>
-                            </div>
-                            <div class="icon"><i class="fas fa-graduation-cap"></i></div>
-                            <a href="#" class="small-box-footer">
-                                View Academic Record <i class="fas fa-arrow-circle-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-
-                    {{-- LEFT COLUMN (Main Info) --}}
-                    <div class="col-md-8">
-
-                        {{-- TODAY'S SCHEDULE (For the Active Child) --}}
-                        <div class="card card-outline card-primary shadow-sm">
-                            <div class="card-header">
-                                <h3 class="card-title font-weight-bold">
-                                    <i class="fas fa-calendar-day mr-1 text-primary"></i>
-                                    {{ $activeChild->name }}'s Schedule Today
-                                    <span class="badge badge-primary ml-2">{{ now()->format('l') }}</span>
-                                </h3>
-                            </div>
-                            <div class="card-body p-0">
-                                @if(isset($todayClasses) && $todayClasses->count() > 0)
-                                    <div class="table-responsive">
+                            {{-- Today's Schedule --}}
+                            <div class="card card-outline card-primary shadow-sm">
+                                <div class="card-header">
+                                    <h3 class="card-title font-weight-bold">
+                                        <i class="fas fa-calendar-day mr-1 text-primary"></i>
+                                        {{ $child->name }}'s Schedule Today
+                                        <span class="badge badge-primary ml-2">
+                                            {{ now()->format('l') }}
+                                        </span>
+                                    </h3>
+                                </div>
+                                <div class="card-body p-0">
+                                    @if ($data['todayClasses']->count() > 0)
                                         <table class="table table-hover m-0">
                                             <thead class="bg-light">
                                                 <tr>
@@ -115,171 +170,359 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach($todayClasses as $slot)
+                                                @foreach ($data['todayClasses'] as $slot)
                                                     @php
-                                                        $start = \Carbon\Carbon::parse($slot->start_time);
-                                                        $end = \Carbon\Carbon::parse($slot->end_time);
+                                                        $start = Carbon\Carbon::parse($slot->start_time);
+                                                        $end = Carbon\Carbon::parse($slot->end_time);
                                                         $isNow = now()->between($start, $end);
                                                     @endphp
                                                     <tr class="{{ $isNow ? 'table-success' : '' }}">
                                                         <td class="align-middle">
-                                                            @if($isNow)
+                                                            @if ($isNow)
                                                                 <span class="badge badge-success mr-1">NOW</span>
                                                             @endif
-                                                            {{ $start->format('h:i A') }} - {{ $end->format('h:i A') }}
+                                                            {{ $start->format('h:i A') }} -
+                                                            {{ $end->format('h:i A') }}
                                                         </td>
-                                                        <td class="align-middle font-weight-bold">{{ $slot->subject->name }}</td>
-                                                        <td class="align-middle">{{ $slot->teacher->name ?? 'TBA' }}</td>
+                                                        <td class="align-middle font-weight-bold">
+                                                            {{ $slot->subject->name }}
+                                                        </td>
+                                                        <td class="align-middle">
+                                                            {{ $slot->teacher->name ?? 'TBA' }}
+                                                        </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
                                         </table>
-                                    </div>
-                                @else
-                                    <div class="text-center p-4 text-muted">
-                                        <i class="fas fa-school fa-2x mb-2"></i>
-                                        <p>No classes scheduled for today.</p>
+                                    @else
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fas fa-coffee fa-2x mb-2"></i>
+                                            <p>No classes scheduled for today.</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- Grades --}}
+                            <div class="card card-outline card-info shadow-sm" id="grades-{{ $child->id }}">
+                                <div class="card-header">
+                                    <h3 class="card-title font-weight-bold">
+                                        <i class="fas fa-chart-line mr-1 text-info"></i>
+                                        Academic Performance
+                                    </h3>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-striped table-hover m-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Subject</th>
+                                                <th class="text-center">Score</th>
+                                                <th class="text-center">Grade</th>
+                                                <th class="text-center">Remark</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($data['grades'] as $grade)
+                                                @php
+                                                    $score = $grade->total_score;
+                                                    $letter =
+                                                        $score >= 70
+                                                            ? 'A'
+                                                            : ($score >= 60
+                                                                ? 'B'
+                                                                : ($score >= 50
+                                                                    ? 'C'
+                                                                    : ($score >= 40
+                                                                        ? 'D'
+                                                                        : 'F')));
+                                                    $remark =
+                                                        $score >= 70
+                                                            ? 'Excellent'
+                                                            : ($score >= 60
+                                                                ? 'Very Good'
+                                                                : ($score >= 50
+                                                                    ? 'Good'
+                                                                    : ($score >= 40
+                                                                        ? 'Pass'
+                                                                        : 'Needs Improvement')));
+                                                    $badgeClass =
+                                                        $score >= 70
+                                                            ? 'success'
+                                                            : ($score >= 50
+                                                                ? 'warning'
+                                                                : 'danger');
+                                                @endphp
+                                                <tr>
+                                                    <td class="align-middle font-weight-bold">
+                                                        {{ $grade->subject->name }}
+                                                    </td>
+                                                    <td class="align-middle text-center">
+                                                        {{ $score }}%
+                                                    </td>
+                                                    <td class="align-middle text-center">
+                                                        <span class="badge badge-{{ $badgeClass }} p-2">
+                                                            {{ $letter }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="align-middle text-center">
+                                                        {{ $remark }}
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="text-center p-4 text-muted">
+                                                        No published grades yet for this term.
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                                @if ($data['grades']->count() > 0)
+                                    <div class="card-footer d-flex justify-content-between align-items-center">
+                                        <span class="font-weight-bold">
+                                            Term Average:
+                                            <strong class="text-primary">{{ $data['average'] }}%</strong>
+                                        </span>
+                                        <a href="{{ resolveRoute('reports.single', $child->id) }}"
+                                            class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-file-pdf"></i> Download Report Card
+                                        </a>
                                     </div>
                                 @endif
                             </div>
-                        </div>
 
-                        {{-- RECENT GRADES --}}
-                        <div class="card card-outline card-info shadow-sm">
-                            <div class="card-header border-0">
-                                <h3 class="card-title font-weight-bold">
-                                    <i class="fas fa-chart-line mr-1 text-info"></i>
-                                    Recent Grades
-                                </h3>
-                            </div>
-                            <div class="card-body p-0">
-                                <table class="table table-striped table-hover m-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Subject</th>
-                                            <th>Type</th>
-                                            <th>Score</th>
-                                            <th>Date Uploaded</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($recentGrades as $grade)
+                            {{-- Attendance Breakdown --}}
+                            <div class="card card-outline card-success shadow-sm" id="attendance-{{ $child->id }}">
+                                <div class="card-header">
+                                    <h3 class="card-title font-weight-bold">
+                                        <i class="fas fa-user-check mr-1 text-success"></i>
+                                        Attendance Breakdown
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+
+                                    {{-- Term Summary --}}
+                                    <div class="row text-center mb-4">
+                                        <div class="col-4">
+                                            <div class="h3 font-weight-bold text-success mb-0">
+                                                {{ $data['termPresent'] }}
+                                            </div>
+                                            <small class="text-muted">Present</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="h3 font-weight-bold text-danger mb-0">
+                                                {{ $data['termAbsent'] }}
+                                            </div>
+                                            <small class="text-muted">Absent</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="h3 font-weight-bold text-primary mb-0">
+                                                {{ $data['termRate'] }}%
+                                            </div>
+                                            <small class="text-muted">Rate</small>
+                                        </div>
+                                    </div>
+
+                                    {{-- Monthly Chart --}}
+                                    <h6 class="font-weight-bold text-muted mb-3">
+                                        Monthly Breakdown (Last 6 Months)
+                                    </h6>
+                                    <table class="table table-sm table-bordered m-0">
+                                        <thead class="bg-light">
                                             <tr>
-                                                <td class="font-weight-bold">{{ $grade->subject->name }}</td>
-                                                <td>{{ $grade->assessment_type }}</td>
-                                                <td><span class="badge badge-primary" style="font-size: 1em;">{{ $grade->score }}</span></td>
-                                                <td class="text-muted">{{ $grade->created_at->format('M d, Y') }}</td>
+                                                <th>Month</th>
+                                                <th class="text-center text-success">Present</th>
+                                                <th class="text-center text-danger">Absent</th>
+                                                <th class="text-center text-warning">Late</th>
+                                                <th class="text-center">Rate</th>
                                             </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="4" class="text-center p-4 text-muted">No recent grades posted.</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($data['monthlyBreakdown'] as $month)
+                                                <tr>
+                                                    <td class="font-weight-bold">{{ $month['month'] }}</td>
+                                                    <td class="text-center text-success">{{ $month['present'] }}</td>
+                                                    <td class="text-center text-danger">{{ $month['absent'] }}</td>
+                                                    <td class="text-center text-warning">{{ $month['late'] }}</td>
+                                                    <td class="text-center">
+                                                        <span
+                                                            class="badge badge-{{ $month['rate'] >= 75 ? 'success' : 'danger' }}">
+                                                            {{ $month['rate'] }}%
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="card-footer text-center">
-                                <a href="#" class="uppercase font-weight-bold">Download Full Report Card</a>
-                            </div>
+
                         </div>
 
-                    </div>
+                        {{-- Right Column --}}
+                        <div class="col-md-4">
 
-                    {{-- RIGHT COLUMN (Actions & Activity) --}}
-                    <div class="col-md-4">
-
-                        {{-- QUICK ACTIONS --}}
-                        <div class="card card-outline card-success shadow-sm">
-                            <div class="card-header">
-                                <h3 class="card-title font-weight-bold">
-                                    <i class="fas fa-bolt mr-1 text-success"></i> Quick Actions
-                                </h3>
-                            </div>
-                            <div class="card-body">
-                                <a href="#" class="btn btn-block btn-outline-danger mb-2 text-left font-weight-bold">
-                                    <i class="fas fa-credit-card mr-2"></i> Pay School Fees
-                                </a>
-                                {{-- <a href="{{ route('messages.index') }}" class="btn btn-block btn-outline-success mb-2 text-left font-weight-bold">
-                                    <i class="fas fa-comments mr-2"></i> Message Teachers
-                                </a>
-                                <a href="{{ route('announcements.index') }}" class="btn btn-block btn-outline-info mb-2 text-left font-weight-bold">
-                                    <i class="fas fa-bullhorn mr-2"></i> View Announcements
-                                </a> --}}
-                                <a href="#" class="btn btn-block btn-outline-primary text-left font-weight-bold">
-                                    <i class="fas fa-calendar-minus mr-2"></i> Report Absence
-                                </a>
-                            </div>
-                        </div>
-
-                        {{-- RECENT ACTIVITY --}}
-                        <div class="card card-outline card-warning shadow-sm">
-                            <div class="card-header">
-                                <h3 class="card-title font-weight-bold">
-                                    <i class="fas fa-history mr-1 text-warning"></i> Recent Activity
-                                </h3>
-                            </div>
-                            <div class="card-body p-0">
-                                <ul class="list-group list-group-flush">
-
-                                    {{-- Today's Attendance Pulse --}}
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
+                            {{-- Fees & Invoices --}}
+                            <div class="card card-outline card-danger shadow-sm" id="fees-{{ $child->id }}">
+                                <div class="card-header">
+                                    <h3 class="card-title font-weight-bold">
+                                        <i class="fas fa-file-invoice-dollar mr-1 text-danger"></i>
+                                        Fees & Payments
+                                    </h3>
+                                </div>
+                                <div class="card-body p-0">
+                                    <ul class="list-group list-group-flush">
+                                        @forelse($invoices as $invoice)
                                             @php
-                                                $attStatus = $lastAttendance->status ?? 'Pending';
-                                                $attColor = $attStatus == 'PRESENT' ? 'success' : ($attStatus == 'ABSENT' ? 'danger' : 'secondary');
+                                                $paid = $invoice->payments_sum_amount ?? 0;
+                                                $balance = $invoice->total_amount - $paid;
                                             @endphp
-                                            <span class="badge badge-{{ $attColor }} mr-3 p-2">
-                                                <i class="fas fa-user-check"></i>
-                                            </span>
-                                            <div>
-                                                <div class="font-weight-bold text-sm">Today's Attendance</div>
-                                                <small class="text-muted">{{ ucfirst(strtolower($attStatus)) }}</small>
-                                            </div>
-                                        </div>
-                                    </li>
-
-                                    {{-- Last Grade Entry --}}
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge badge-primary mr-3 p-2">
-                                                <i class="fas fa-file-alt"></i>
-                                            </span>
-                                            <div>
-                                                <div class="font-weight-bold text-sm">New Grade Posted</div>
-                                                @if(isset($latestGrade))
-                                                    <small class="text-muted">{{ $latestGrade->subject->name ?? 'Subject' }} &mdash; {{ $latestGrade->created_at->diffForHumans() }}</small>
-                                                @else
-                                                    <small class="text-muted">No new grades</small>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </li>
-
-                                    {{-- Unread Messages --}}
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge badge-{{ $unreadMessages > 0 ? 'danger' : 'secondary' }} mr-3 p-2">
-                                                <i class="fas fa-envelope"></i>
-                                            </span>
-                                            <div>
-                                                <div class="font-weight-bold text-sm">Unread Messages</div>
-                                                <small class="text-muted">
-                                                    @if($unreadMessages > 0)
-                                                        {{-- <a href="{{ route('messages.index') }}">{{ $unreadMessages }} unread message(s)</a> --}}
-                                                    @else
-                                                        All caught up!
-                                                    @endif
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </li>
-
-                                </ul>
+                                            <li class="list-group-item">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <div class="font-weight-bold text-sm">
+                                                            {{ $invoice->invoice_number }}
+                                                        </div>
+                                                        <small class="text-muted">
+                                                            Due:
+                                                            {{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}
+                                                        </small>
+                                                        <div class="mt-1">
+                                                            <span
+                                                                class="badge badge-{{ $invoice->status == 'PAID' ? 'success' : ($invoice->status == 'PARTIAL' ? 'warning' : 'danger') }}">
+                                                                {{ $invoice->status }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <div class="text-muted text-sm">
+                                                            ₦{{ number_format($invoice->total_amount) }}
+                                                        </div>
+                                                        @if ($balance > 0)
+                                                            <div class="text-danger font-weight-bold">
+                                                                ₦{{ number_format($balance) }} due
+                                                            </div>
+                                                            {{-- Pay Now Button --}}
+                                                            <button class="btn btn-xs btn-danger mt-1" data-toggle="modal"
+                                                                data-target="#payModal-{{ $invoice->id }}">
+                                                                Pay Now
+                                                            </button>
+                                                        @else
+                                                            <div class="text-success font-weight-bold text-sm">
+                                                                Paid in Full
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        @empty
+                                            <li class="list-group-item text-center text-muted p-4">
+                                                No invoices for this term.
+                                            </li>
+                                        @endforelse
+                                    </ul>
+                                </div>
+                                @if ($data['outstandingBalance'] > 0)
+                                    <div class="card-footer bg-danger text-white text-center">
+                                        <strong>Total Outstanding:
+                                            ₦{{ number_format($data['outstandingBalance']) }}</strong>
+                                    </div>
+                                @else
+                                    <div class="card-footer bg-success text-white text-center">
+                                        <strong><i class="fas fa-check-circle mr-1"></i> All Fees Paid</strong>
+                                    </div>
+                                @endif
                             </div>
-                        </div>
 
+                            {{-- Quick Actions --}}
+                            <div class="card card-outline card-warning shadow-sm">
+                                <div class="card-header">
+                                    <h3 class="card-title font-weight-bold">
+                                        <i class="fas fa-bolt mr-1 text-warning"></i> Quick Actions
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <a href="{{ resolveRoute('reports.single', $child->id) }}"
+                                        class="btn btn-block btn-outline-danger mb-2 text-left">
+                                        <i class="fas fa-file-pdf mr-2"></i> Download Report Card
+                                    </a>
+                                    <a href="{{ resolveRoute('messages.index') }}"
+                                        class="btn btn-block btn-outline-success mb-2 text-left">
+                                        <i class="fas fa-comments mr-2"></i> Message Teachers
+                                    </a>
+                                    <a href="{{ resolveRoute('announcements.index') }}"
+                                        class="btn btn-block btn-outline-info mb-2 text-left">
+                                        <i class="fas fa-bullhorn mr-2"></i> View Announcements
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
-                </div>
+
+                    {{-- Pay Modals for each invoice --}}
+                    @foreach ($invoices as $invoice)
+                        @php $balance = $invoice->total_amount - ($invoice->payments_sum_amount ?? 0); @endphp
+                        @if ($balance > 0)
+                            <div class="modal fade" id="payModal-{{ $invoice->id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form action="{{ route('payments.store', $invoice->id) }}" method="POST">
+                                            @csrf
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title">
+                                                    Pay Invoice: {{ $invoice->invoice_number }}
+                                                </h5>
+                                                <button type="button" class="close text-white"
+                                                    data-dismiss="modal"><span>&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="alert alert-info">
+                                                    Outstanding Balance:
+                                                    <strong>₦{{ number_format($balance) }}</strong>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Amount Paying</label>
+                                                    <input type="number" name="amount" class="form-control"
+                                                        max="{{ $balance }}" step="0.01" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Payment Method</label>
+                                                    <select name="method" class="form-control" required>
+                                                        <option value="Bank Transfer">Bank Transfer</option>
+                                                        <option value="Cash">Cash</option>
+                                                        <option value="POS / Card">POS / Card</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Reference / Teller No.</label>
+                                                    <input type="text" name="reference" class="form-control"
+                                                        placeholder="e.g. Bank teller number">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Payment Date</label>
+                                                    <input type="date" name="payment_date" class="form-control"
+                                                        value="{{ date('Y-m-d') }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-danger">
+                                                    <i class="fas fa-check"></i> Confirm Payment
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+
+                    @if (!$loop->last)
+                        <hr class="my-5" style="border-top: 3px dashed #dee2e6;">
+                    @endif
+                @endforeach
 
             </div>
         </section>

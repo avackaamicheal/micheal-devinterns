@@ -4,13 +4,13 @@ namespace App\Models;
 
 use App\Models\ClassLevel;
 use App\Models\Section;
+use App\Traits\Multitenantable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StudentProfile extends Model
 {
-    use HasFactory;
+    use HasFactory, Multitenantable;
 
     protected $fillable = [
         'school_id',
@@ -23,13 +23,11 @@ class StudentProfile extends Model
         'address',
     ];
 
-    // --- ADD THIS METHOD ---
     public function section()
     {
         return $this->belongsTo(Section::class);
     }
 
-    // You likely need this one too for the Class Level name
     public function classLevel()
     {
         return $this->belongsTo(ClassLevel::class);

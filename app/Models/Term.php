@@ -18,6 +18,21 @@ class Term extends Model
         return $this->belongsTo(AcademicSession::class);
     }
 
+
+    public static function getActive(): ?self
+    {
+        return static::where('is_active', true)
+            ->where('school_id', session('active_school'))
+            ->first();
+    }
+
+    public static function getActiveOrFail(): self
+    {
+        return static::where('is_active', true)
+            ->where('school_id', session('active_school'))
+            ->firstOrFail();
+    }
+
     // Custom method to safely activate this term
     public function makeActive()
     {

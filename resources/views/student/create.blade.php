@@ -144,7 +144,7 @@
 
                                     <div class="form-group">
                                         <label>Phone Number <span class="text-danger">*</span></label>
-                                        <input type="text" name="parent_phone" class="form-control" required
+                                        <input type="text" name="alt_phone" class="form-control" required
                                             placeholder="e.g. 08012345678">
                                     </div>
 
@@ -162,6 +162,12 @@
                                         <label>Occupation <small class="text-muted">(optional)</small></label>
                                         <input type="text" name="parent_occupation" class="form-control"
                                             placeholder="e.g. Engineer, Teacher">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Address<small class="text-muted">(optional)</small></label>
+                                        <input type="text" name="address" class="form-control"
+                                            placeholder="Enter parent address">
                                     </div>
 
                                 </div>

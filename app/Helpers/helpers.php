@@ -27,7 +27,7 @@ if (!function_exists('resolveRoute')) {
             'timetable.store' => ['Teacher' => 'teacher.timetable.store', 'SchoolAdmin' => 'admin.timetable.store'],
             'timetable.destroy' => ['Teacher' => 'teacher.timetable.index', 'SchoolAdmin' => 'admin.timetable.destroy'],
             'reports.index' => ['Teacher' => 'teacher.reports.index', 'SchoolAdmin' => 'admin.reports.index'],
-            'reports.single' => ['Teacher' => 'teacher.reports.single', 'SchoolAdmin' => 'admin.reports.single'],
+            'reports.single' => ['Teacher' => 'teacher.reports.single', 'SchoolAdmin' => 'admin.reports.single', 'Parent' => 'parent.reports.single'],
             'reports.batch' => ['Teacher' => 'teacher.reports.batch', 'SchoolAdmin' => 'admin.reports.batch'],
             'announcements.index' => ['Teacher' => 'teacher.announcements.index', 'SchoolAdmin' => 'admin.announcements.index'],
             'announcements.store' => ['Teacher' => 'teacher.announcements.store', 'SchoolAdmin' => 'admin.announcements.store'],

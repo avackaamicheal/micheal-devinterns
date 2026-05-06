@@ -31,7 +31,7 @@ class StudentAdmissionController extends Controller
 
         $students = User::query()
             ->role('Student')
-            // ->where('school_id', $schoolId)
+            ->where('school_id', $schoolId)
             // EAGER LOAD: Get Profile, Section (and its Class), and Parents in one go
             ->with(['studentProfile.section.classLevel', 'parents'])
             ->latest()
@@ -85,7 +85,7 @@ class StudentAdmissionController extends Controller
                     'name' => $request->parent_name,
                     'email' => $request->parent_email,
                     'password' => Hash::make('parent123'),
-                    'school_id' => session('active_school'), // Or null if global
+                    'school_id' => session('active_school'),
                 ]);
 
                 $parentUser->assignRole('Parent');
@@ -93,9 +93,20 @@ class StudentAdmissionController extends Controller
                 // Create Parent Profile
                 ParentProfile::create([
                     'user_id' => $parentUser->id,
-                    'occupation' => $request->parent_occupation ?? 'N/A', // Add field to form if needed
-                    'alt_phone' => $request->parent_phone,
+                    'occupation' => $request->parent_occupation ?? 'N/A',
+                    //'phone' => $request->parent_phone, // FIX: Save to phone
+                    'alt_phone' => $request->alt_phone,               // FIX: Explicitly null if not provided
+                    'address' => $request->address,    // FIX: Use the student's address for the parent
                 ]);
+            } else {
+                // Optional: If parent already exists, update their phone/address if it was missing
+                ParentProfile::updateOrCreate(
+                    ['user_id' => $parentUser->id],
+                    [
+                        'alt_phone' => $request->alt_phone,
+                        'address' => $request->address,
+                    ]
+                );
             }
 
             // 4. Link Parent to Student (The Pivot Table)

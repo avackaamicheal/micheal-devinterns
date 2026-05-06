@@ -216,7 +216,8 @@
                         alt="User Image">
                 </div>
                 <div class="info">
-                    <a href="#" class="d-block">{{ auth()->user()->name }} ({{ auth()->user()->getRoleNames()->first() }})</a>
+                    <a href="#" class="d-block">{{ auth()->user()->name }}
+                        ({{ auth()->user()->getRoleNames()->first() }})</a>
                 </div>
             </div>
 
@@ -262,6 +263,12 @@
                             <a href="{{ route('school.index') }}" class="nav-link @activeRoute('school.*')"><i
                                     class="nav-icon fas fa-school"></i>
                                 <p>Schools</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('superadmin.admins.index') }}" class="nav-link @activeRoute('superadmin.admins.*')">
+                                <i class="nav-icon fas fa-user-shield"></i>
+                                <p>School Admins</p>
                             </a>
                         </li>
                     @endrole

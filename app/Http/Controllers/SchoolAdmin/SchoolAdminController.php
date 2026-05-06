@@ -3,22 +3,30 @@
 namespace App\Http\Controllers\SchoolAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreSchoolAdminRequest;
+use App\Http\Requests\UpdateSchoolAdminRequest;
 use App\Models\Attendance;
 use App\Models\ClassLevel;
 use App\Models\School;
 use App\Models\StudentProfile;
 use App\Models\Subject;
 use App\Models\TeacherProfile;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class SchoolAdminController extends Controller
 {
-    public function index(School $school)
+    public function dashboard(School $school)
     {
         // Stats
-        $studentCount = StudentProfile::count();
+        $studentCount = User::role('Student')
+            ->where('school_id', $school->id)
+            ->count();
 
-        $staffCount = TeacherProfile::count();
+        $staffCount = User::role('Teacher')
+            ->where('school_id', $school->id)
+            ->count();
 
         $classCount = ClassLevel::count();
 
@@ -59,10 +67,10 @@ class SchoolAdminController extends Controller
         }
 
         $attendanceChart = [
-            'labels'  => $days,
+            'labels' => $days,
             'present' => $presentData,
-            'absent'  => $absentData,
-            'late'    => $lateData,
+            'absent' => $absentData,
+            'late' => $lateData,
         ];
 
         return view('schooladmin.index', compact(
@@ -75,4 +83,72 @@ class SchoolAdminController extends Controller
             'attendanceChart'
         ));
     }
+
+    public function index()
+    {
+        $admins = User::role('SchoolAdmin')
+            ->with('school')
+            ->latest()
+            ->get();
+
+        $schools = School::all();
+
+        return view('superadmin.admins.index', compact('admins', 'schools'));
+    }
+
+    public function create()
+    {
+        $schools = School::all();
+        return view('superadmin.admins.create', compact('schools'));
+    }
+
+    public function store(StoreSchoolAdminRequest $request)
+    {
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'school_id' => $request->school_id,
+        ]);
+
+        $user->assignRole('SchoolAdmin');
+
+        return redirect()->route('superadmin.admins.index')
+            ->with('success', 'School Admin created successfully!');
+    }
+
+    public function edit(User $admin)
+    {
+        $schools = School::all();
+        return view('superadmin.admins.edit', compact('admin', 'schools'));
+    }
+
+    public function update(UpdateSchoolAdminRequest $request, User $admin)
+    {
+        $admin->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'school_id' => $request->school_id,
+        ]);
+
+        if ($request->filled('password')) {
+            $admin->update(['password' => Hash::make($request->password)]);
+        }
+
+        return redirect()->route('superadmin.admins.index')
+            ->with('success', 'School Admin updated successfully!');
+    }
+
+    public function destroy(User $admin)
+    {
+        // Prevent deleting yourself
+        if ($admin->id === auth()->id()) {
+            return back()->with('error', 'You cannot delete your own account.');
+        }
+
+        $admin->delete();
+
+        return back()->with('success', 'School Admin removed successfully!');
+    }
+
 }

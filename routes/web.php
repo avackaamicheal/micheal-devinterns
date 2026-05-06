@@ -43,6 +43,13 @@ Route::middleware(['auth', 'role:SuperAdmin', 'tenant'])
         Route::get('/dashboard', [SuperAdminController::class, 'index'])->name('superadmin.dashboard');
         Route::resource('school', SchoolController::class);
         Route::post('/school-context', SchoolContextController::class)->name('school.context');
+        // School Admins
+        Route::get('/admins', [SchoolAdminController::class, 'index'])->name('superadmin.admins.index');
+        Route::get('/admins/create', [SchoolAdminController::class, 'create'])->name('superadmin.admins.create');
+        Route::post('/admins', [SchoolAdminController::class, 'store'])->name('superadmin.admins.store');
+        Route::get('/admins/{admin}/edit', [SchoolAdminController::class, 'edit'])->name('superadmin.admins.edit');
+        Route::put('/admins/{admin}', [SchoolAdminController::class, 'update'])->name('superadmin.admins.update');
+        Route::delete('/admins/{admin}', [SchoolAdminController::class, 'destroy'])->name('superadmin.admins.destroy');
     });
 
 Route::middleware(['auth', 'active'])
@@ -54,7 +61,7 @@ Route::middleware(['auth', 'active'])
         // -----------------------------------------------
         Route::middleware(['role:SchoolAdmin'])
             ->group(function () {
-            Route::get('/dashboard', [SchoolAdminController::class, 'index'])->name('schooladmin.dashboard');
+            Route::get('/dashboard', [SchoolAdminController::class, 'dashboard'])->name('schooladmin.dashboard');
             Route::resource('classLevel', ClassLevelController::class)->only(['index', 'store', 'update', 'destroy']);
             Route::resource('section', SectionController::class)->only(['index', 'store', 'update', 'destroy']);
             Route::resource('subject', SubjectController::class)->only(['index', 'store', 'update', 'destroy']);
@@ -173,6 +180,10 @@ Route::middleware(['auth', 'active'])
             ->prefix('parent')
             ->group(function () {
             Route::get('/dashboard', [ParentDashboard::class, 'index'])->name('parent.dashboard');
+            Route::post('/invoices/{invoice}/pay', [PaymentController::class, 'store'])->name('parent.payments.store');
+            Route::get('/reports/student/{id}', [ReportCardController::class, 'downloadSingle'])->name('parent.reports.single');
+
+
             Route::get('/announcements', [AnnouncementController::class, 'index'])->name('parent.announcements.index');
 
         });

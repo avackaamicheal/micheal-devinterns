@@ -43,7 +43,7 @@ class StoreStudentRequest extends FormRequest
 
             // Parent Info (We check parent email to see if they already exist)
             'parent_email' => ['required', 'email'],
-            'parent_phone' => ['required', 'string'],
+            'alt_phone' => ['required', 'string'],
             'parent_name' => ['required', 'string'],
             'relationship' => ['required', 'string'], // Father, Mother, Guardian
         ];
